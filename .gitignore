@@ -48,3 +48,4 @@ jspm_packages/
 out-tsc/
 dist/
 build/
+ecosystem.config.js

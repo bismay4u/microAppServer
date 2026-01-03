@@ -1,0 +1,9 @@
+{
+  "name": "MicroAppServer Node.js Debugger",
+  "description": "MicroAppServer Node.js debugging via Chrome DevTools",
+  "version": "1.0",
+  "type": "node",
+  "allowed_origins": [
+    "chrome-devtools://*"
+  ]
+}

@@ -1,1 +1,198 @@
-<h1 align="center">Welcome to the Mocha Framework</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartinfoLogiks - Apphub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <style>
+        header {
+            position: sticky;
+        }
+        main {
+            align-items: flex-start !important;
+            justify-content: center !important;
+            gap: 20px !important;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="glass">
+            <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3 animate-fadeInUp">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                        <span class="text-2xl">🚀</span>
+                    </div>
+                    <span class="text-white text-2xl font-bold">Apphub</span>
+                </div>
+                <div class="flex items-center space-x-4 animate-fadeInUp" style="animation-delay: 0.2s;">
+                    <a href="https://www.smartinfologiks.com/" class="text-white hover:text-gray-200 transition px-4 py-2">Home</a>
+                    <!-- <button class="text-white hover:text-gray-200 transition px-4 py-2">Help</button>
+                    <button class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg">
+                        Sign In
+                    </button> -->
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <main class="flex-1 flex items-center justify-center px-6 py-12" >
+            <div class="max-w-7xl w-full">
+                <!-- Title Section -->
+                <div class="text-center mb-16 animate-fadeInUp">
+                    <!-- <h1 class="text-6xl font-bold text-white mb-6">
+                        Your Digital Workspace
+                    </h1> -->
+                    <p class="text-2xl text-white/90 max-w-2xl mx-auto">
+                        Access all SmartinfoLogiks Apps from one beautiful central panel. Fast, secure, and designed for productivity.
+                    </p>
+                </div>
+
+                <!-- Apps Grid -->
+                <div id="appgrid"  class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-fadeInUp" style="animation-delay: 0.3s;">
+                    <!-- App Card 1 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-blue-400 to-blue-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">📊</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Analytics</h3>
+                        <p class="text-white/70 text-xs">View insights</p>
+                    </div>
+
+                    <!-- App Card 2 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-green-400 to-green-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">💬</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Messages</h3>
+                        <p class="text-white/70 text-xs">Team chat</p>
+                    </div>
+
+                    <!-- App Card 3 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-purple-400 to-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">📁</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Files</h3>
+                        <p class="text-white/70 text-xs">Documents</p>
+                    </div>
+
+                    <!-- App Card 4 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-orange-400 to-orange-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">📅</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Calendar</h3>
+                        <p class="text-white/70 text-xs">Events</p>
+                    </div>
+
+                    <!-- App Card 5 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-pink-400 to-pink-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">✉️</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Email</h3>
+                        <p class="text-white/70 text-xs">Inbox</p>
+                    </div>
+
+                    <!-- App Card 6 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">📝</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Notes</h3>
+                        <p class="text-white/70 text-xs">Ideas</p>
+                    </div>
+
+                    <!-- App Card 7 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-red-400 to-red-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">🎯</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Tasks</h3>
+                        <p class="text-white/70 text-xs">Todos</p>
+                    </div>
+
+                    <!-- App Card 8 -->
+                    <div class="app-card glass rounded-xl p-4 cursor-pointer group">
+                        <div class="bg-gradient-to-br from-indigo-400 to-indigo-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">⚙️</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">Settings</h3>
+                        <p class="text-white/70 text-xs">Customize</p>
+                    </div>
+                </div>
+
+                <!-- Floating Element -->
+                <div class="absolute top-20 right-20 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
+                <div class="absolute bottom-20 left-20 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-float" style="animation-delay: 3s;"></div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="glass py-6">
+            <div class="max-w-7xl mx-auto px-6 text-center">
+                <p class="text-white/80 text-sm">© 2026 SmartinfoLogiks. Designed for productivity and elegance.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Add click handlers to app cards
+        // document.querySelectorAll('.app-card').forEach(card => {
+        //     card.addEventListener('click', function() {
+        //         const appName = this.querySelector('h3').textContent;
+        //         alert(`Opening ${appName}...`);
+        //         // In production, replace with: window.location.href = '/app-url'
+        //     });
+        // });
+
+        // Add staggered animation to cards
+        document.querySelectorAll('.app-card').forEach((card, index) => {
+            card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
+            card.classList.add('animate-fadeInUp');
+        });
+
+        // Call on page load
+        loadApps();
+
+        // Fetch apps from endpoint and populate grid
+        async function loadApps() {
+            try {
+                const response = await fetch('/getapps');
+                const apps = await response.json();
+                
+                //const grid = document.querySelector('.grid');
+                const grid = document.getElementById('appgrid');
+                grid.innerHTML = ''; // Clear existing cards
+                
+                apps.forEach((app, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'app-card glass rounded-xl p-4 cursor-pointer group animate-fadeInUp';
+                    card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
+                    
+                    //color should be tailwind color - blue, green, purple, orange, pink, yellow, red, indigo, etc.
+                    card.innerHTML = `
+                        <div class="bg-gradient-to-br from-${app.color}-400 to-${app.color}-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                            <span class="text-2xl">${app.icon}</span>
+                        </div>
+                        <h3 class="text-white text-base font-bold mb-1">${app.name}</h3>
+                        <p class="text-white/70 text-xs">${app.description}</p>
+                    `;
+                    
+                    card.addEventListener('click', function() {
+                        window.location.href = app.url;
+                    });
+                    
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading apps:', error);
+            }
+        }
+    </script>
+</body>
+</html>
