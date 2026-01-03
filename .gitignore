@@ -48,4 +48,6 @@ jspm_packages/
 out-tsc/
 dist/
 build/
+zold/
+demo/
 ecosystem.config.js

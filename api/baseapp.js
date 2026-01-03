@@ -7,6 +7,10 @@ module.exports = function(app) {
 
     fs.readdirSync(FOLDER_PLUGINS).forEach(folder => {
         if(folder.substring(0,1) === ".") return; //Skip hidden files/folders
+        if(process.env.NODE_ENV === "production" && folder.endsWith("_dev")) return; //Skip dev plugins in production
+        if(process.env.NODE_ENV === "development" && folder.endsWith("_prod")) return; //Skip production plugins in development
+
+        if(process.env.NODE_ENV === "production" && folder=="demo") return; //Skip demo plugin in production
 
         const servicePath = FOLDER_PLUGINS + folder + "/service.js";
         const wwwPath = FOLDER_PLUGINS + folder + "/www/";
