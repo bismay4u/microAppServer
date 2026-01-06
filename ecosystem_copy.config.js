@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    name: 'MicroAppServer',
+    name: 'HyperApps',
     script: 'index.js',
     instances : '1',
     watch: ["plugins/*"],
