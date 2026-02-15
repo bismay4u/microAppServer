@@ -13,6 +13,7 @@ global.fs = require('fs');
 global.path = require('path');
 global.sha1 = require('sha1');
 global.express = require('express');
+const multer = require("multer");
 const { v4: uuidv4 } = require('uuid');
 global.uuidv4 = uuidv4;
 
@@ -25,6 +26,8 @@ _CONFIG.OUTPUT_PATH = __dirname + "/output/";
 _CONFIG.TEMP_PATH = __dirname + "/temp/";
 
 const appServer = express();
+const upload = multer({ dest: "uploads/" });
+global.uploader = upload;
 
 console.log("\x1b[33m%s\x1b[0m","\nMicroAppServer Initialization Started\n");
 
