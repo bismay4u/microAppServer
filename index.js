@@ -13,6 +13,8 @@ global.fs = require('fs');
 global.path = require('path');
 global.sha1 = require('sha1');
 global.express = require('express');
+const { v4: uuidv4 } = require('uuid');
+global.uuidv4 = uuidv4;
 
 const _CONFIG = global._CONFIG = {};
 
