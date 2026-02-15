@@ -24,6 +24,7 @@ _CONFIG.ROOT_PATH  = __dirname;
 _CONFIG.PLUGIN_PATH = __dirname + "/plugins/";
 _CONFIG.OUTPUT_PATH = __dirname + "/output/";
 _CONFIG.TEMP_PATH = __dirname + "/temp/";
+_CONFIG.CACHE_PATH = __dirname + "/cache/";
 
 const appServer = express();
 const upload = multer({ dest: "temp/uploads/" });
