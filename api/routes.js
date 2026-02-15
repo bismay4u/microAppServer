@@ -31,6 +31,21 @@ module.exports = function(app) {
 
         res.setHeader("Content-Type", "application/xml");
         res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
-        res.sendFile(filePath);
+        // res.sendFile(filePath);
+
+        const stream = fs.createReadStream(filePath);
+        stream.pipe(res);
+
+        res.on("finish", () => {
+            fs.unlink(filePath, (err) => {
+                if (err) console.error("Delete failed:", err);
+                else console.log("File deleted after stream finished");
+            });
+        });
+
+        stream.on("error", (err) => {
+            console.error("Stream error:", err);
+            res.sendStatus(500);
+        });
     });
 }
