@@ -51,7 +51,7 @@ appServer.listen(process.env.PORT, () => {
         //res.status(404).send("404 Not Found - The requested resource could not be found.");
         res.status(404).sendFile(path.join(__dirname, "public/error.html"));
 
-        next();
+        // next();
     });
 
     console.log("\x1b[33m%s\x1b[0m",`\nMicroAppServer Server Started @ `+moment().format()+` and can be accessed on ${process.env.PORT}/`);
