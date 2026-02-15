@@ -17,4 +17,20 @@ module.exports = function(app) {
 
         res.json(Object.values(apps));
     });
+
+    app.get('/download/:fileId', (req, res) => {
+        const filePath = path.join(_CONFIG.OUTPUT_PATH, req.params.fileId);
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: "sitemap not generated yet" });
+        }
+
+        var fileName = req.params.fileId.split("_");
+        fileName.shift();
+        fileName = fileName.join("_");
+
+        res.setHeader("Content-Type", "application/xml");
+        res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+        res.sendFile(filePath);
+    });
 }
