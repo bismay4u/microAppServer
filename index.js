@@ -48,7 +48,8 @@ appServer.listen(process.env.PORT, () => {
             console.log("FALLBACK FOR : ", req.url);
         }
 
-        res.status(404).send("404 Not Found - The requested resource could not be found.");
+        //res.status(404).send("404 Not Found - The requested resource could not be found.");
+        res.status(404).sendFile("public/error.html");
 
         next();
     });
