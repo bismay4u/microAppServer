@@ -26,7 +26,7 @@ _CONFIG.OUTPUT_PATH = __dirname + "/output/";
 _CONFIG.TEMP_PATH = __dirname + "/temp/";
 
 const appServer = express();
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "temp/uploads/" });
 global.uploader = upload;
 
 console.log("\x1b[33m%s\x1b[0m","\nMicroAppServer Initialization Started\n");
