@@ -1,4 +1,5 @@
 const DB_NAME = 'hyperAppsStorage';
+const STORE_NAME = _app_id();
 
 function _app_id() {
     return window.location.pathname.split("/")[1];
@@ -8,9 +9,7 @@ function _path_api() {
     return `${window.location.origin}/api/${_app_id()}`;
 }
 
-function openDB(STORE_NAME) {
-    if(!STORE_NAME) STORE_NAME = _app_id();
-    
+function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, 1);
 
