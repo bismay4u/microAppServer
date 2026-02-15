@@ -34,7 +34,10 @@ const BASEAPP = require("./api/baseapp.js")(appServer);
 require("./api/routes.js")(appServer);
 
 if(process.env.DEBUG===true || process.env.DEBUG==="true") {
-    appServer.use((req,res,next)=>{console.log("REQUEST", req.url);next();});
+    appServer.use((req,res,next)=>{
+        console.log("REQUEST FOR : ", req.url, req.originalUrl, req.path, req.baseUrl, req.method, req.host, req.params, req.body);
+        next();
+    });
 }
 
 appServer.listen(process.env.PORT, () => {

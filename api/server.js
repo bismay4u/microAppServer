@@ -19,11 +19,6 @@ module.exports = function(appServer) {
         next();
     });
 
-    appServer.use((req, res, next) => {
-        console.log("REQUEST FOR : ", req.url, req.originalUrl, req.path, req.baseUrl, req.method, req.host, req.params, req.body);
-        next();
-    });
-
     // Serve the "public" folder
     appServer.use("/", express.static("public"));
 
