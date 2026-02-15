@@ -33,6 +33,10 @@ const BASEAPP = require("./api/baseapp.js")(appServer);
 
 require("./api/routes.js")(appServer);
 
+if(process.env.DEBUG===true || process.env.DEBUG==="true") {
+    appServer.use((req,res,next)=>{console.log("REQUEST", req.url);next();});
+}
+
 appServer.listen(process.env.PORT, () => {
 
     // Optional: fallback route
