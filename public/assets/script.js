@@ -5,7 +5,10 @@ function _app_id() {
     return window.location.pathname.split("/")[1];
 }
 
-function _path_api() {
+function _path_api(slug) {
+  if(slug && slug.length>0)
+    return `${window.location.origin}/api/${_app_id()}/${slug}`;
+  else
     return `${window.location.origin}/api/${_app_id()}`;
 }
 
