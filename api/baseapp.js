@@ -24,6 +24,31 @@ module.exports = function(app) {
                     require(servicePath)('/api/'+folder, app);
                 }
                 if(fs.existsSync(wwwPath)) {
+                    if(config.roles && config.roles.length > 0) {
+                        // Protect HTML entry points for role-restricted plugins
+                        app.use('/'+folder, (req, res, next) => {
+                            const isHtmlRequest = req.path === '/' || req.path === '' || req.path.endsWith('.html');
+                            if(!isHtmlRequest) return next();
+
+                            const authHeader = req.headers.authorization;
+                            const token = (authHeader && authHeader.startsWith('Bearer '))
+                                ? authHeader.slice(7)
+                                : req.query.token;
+
+                            if(!token) return res.redirect('/?error=unauthorized');
+
+                            try {
+                                const jwt = require('jsonwebtoken');
+                                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hyperapps-jwt-secret-change-in-production');
+                                if(!hasRoleOverlap(decoded.roles, config.roles)) {
+                                    return res.redirect('/?error=forbidden');
+                                }
+                                next();
+                            } catch(e) {
+                                return res.redirect('/?error=unauthorized');
+                            }
+                        });
+                    }
                     app.use('/'+folder, express.static(wwwPath));
                 }
 

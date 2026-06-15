@@ -35,6 +35,10 @@ console.log("\x1b[33m%s\x1b[0m","\nMicroAppServer Initialization Started\n");
 require("./api/commons.js")(appServer);
 
 const SERVER = require("./api/server.js")(appServer);
+
+// Auth/users must be loaded before baseapp and routes so middleware is globally available
+require("./api/users.js")(appServer);
+
 const BASEAPP = require("./api/baseapp.js")(appServer);
 
 require("./api/routes.js")(appServer);

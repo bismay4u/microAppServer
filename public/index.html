@@ -16,6 +16,48 @@
             justify-content: center !important;
             gap: 20px !important;
         }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .modal-box input:focus {
+            border-color: #7c3aed;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 9999px;
+            background: rgba(255,255,255,0.25);
+            color: white;
+            margin-right: 3px;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -31,34 +73,39 @@
                 </div>
                 <div class="flex items-center space-x-4 animate-fadeInUp" style="animation-delay: 0.2s;">
                     <a href="https://www.smartinfologiks.com/" class="text-white hover:text-gray-200 transition px-4 py-2">Home</a>
-                    <!-- <button class="text-white hover:text-gray-200 transition px-4 py-2">Help</button>
-                    <button class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg">
-                        Sign In
-                    </button> -->
+
+                    <!-- Logged-out state -->
+                    <div id="nav-loggedout">
+                        <button onclick="openLoginModal()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg">
+                            Sign In
+                        </button>
+                    </div>
+
+                    <!-- Logged-in state -->
+                    <div id="nav-loggedin" class="hidden flex items-center space-x-3">
+                        <span id="nav-username" class="text-white font-semibold"></span>
+                        <button onclick="logout()" class="bg-white/20 border border-white/40 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition text-sm">
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             </nav>
         </header>
 
         <!-- Hero Section -->
-        <main class="flex-1 flex items-center justify-center px-6 py-12" >
+        <main class="flex-1 flex items-center justify-center px-6 py-12">
             <div class="max-w-7xl w-full">
-                <!-- Title Section -->
                 <div class="text-center mb-16 animate-fadeInUp">
-                    <!-- <h1 class="text-6xl font-bold text-white mb-6">
-                        Your Digital Workspace
-                    </h1> -->
                     <p class="text-2xl text-white/90 max-w-2xl mx-auto">
                         Access all SmartinfoLogiks Apps from one beautiful central panel. Fast, secure, and designed for productivity.
                     </p>
+                    <p id="error-banner" class="hidden mt-4 text-red-200 text-sm bg-red-500/30 rounded-lg px-4 py-2 max-w-sm mx-auto"></p>
                 </div>
 
                 <!-- Apps Grid -->
-                <div id="appgrid"  class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-fadeInUp" style="animation-delay: 0.3s;">
-                    <!-- App Card 1 -->
-                    
-                </div>
+                <div id="appgrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-fadeInUp" style="animation-delay: 0.3s;"></div>
 
-                <!-- Floating Element -->
+                <!-- Floating Elements -->
                 <div class="absolute top-20 right-20 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
                 <div class="absolute bottom-20 left-20 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-float" style="animation-delay: 3s;"></div>
             </div>
@@ -72,59 +119,192 @@
         </footer>
     </div>
 
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay" onclick="closeLoginModalOutside(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">Sign in</h2>
+            <p class="text-gray-500 text-sm mb-6">Access your SmartinfoLogiks apps</p>
+
+            <div id="login-error" class="hidden mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm"></div>
+
+            <form onsubmit="doLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="login-username" autocomplete="username" required placeholder="Enter username">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" autocomplete="current-password" required placeholder="Enter password">
+                </div>
+                <button type="submit" id="login-btn"
+                    class="w-full bg-purple-600 text-white py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Sign In
+                </button>
+            </form>
+
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold" style="position:absolute">✕</button>
+        </div>
+    </div>
+
     <script>
-        // Add click handlers to app cards
-        // document.querySelectorAll('.app-card').forEach(card => {
-        //     card.addEventListener('click', function() {
-        //         const appName = this.querySelector('h3').textContent;
-        //         alert(`Opening ${appName}...`);
-        //         // In production, replace with: window.location.href = '/app-url'
-        //     });
-        // });
+        // ── Auth helpers ──────────────────────────────────────────────────────
+        function getToken() { return localStorage.getItem('auth_token'); }
+        function getUser()  { return JSON.parse(localStorage.getItem('auth_user') || 'null'); }
 
-        // Add staggered animation to cards
-        document.querySelectorAll('.app-card').forEach((card, index) => {
-            card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
-            card.classList.add('animate-fadeInUp');
-        });
+        function setSession(token, user) {
+            localStorage.setItem('auth_token', token);
+            localStorage.setItem('auth_user', JSON.stringify(user));
+        }
 
-        // Call on page load
-        loadApps();
+        function clearSession() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+        }
 
-        // Fetch apps from endpoint and populate grid
+        function updateNavState() {
+            const user = getUser();
+            if (user) {
+                document.getElementById('nav-loggedout').classList.add('hidden');
+                document.getElementById('nav-loggedin').classList.remove('hidden');
+                document.getElementById('nav-username').textContent = user.username;
+            } else {
+                document.getElementById('nav-loggedout').classList.remove('hidden');
+                document.getElementById('nav-loggedin').classList.add('hidden');
+            }
+        }
+
+        // ── Login modal ───────────────────────────────────────────────────────
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.add('active');
+            document.getElementById('login-username').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.remove('active');
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        function closeLoginModalOutside(e) {
+            if (e.target === document.getElementById('login-modal')) closeLoginModal();
+        }
+
+        async function doLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            const errEl = document.getElementById('login-error');
+            errEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.textContent = 'Signing in…';
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('login-username').value.trim(),
+                        password: document.getElementById('login-password').value
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Login failed');
+
+                setSession(data.token, data.user);
+                closeLoginModal();
+                updateNavState();
+                loadApps();
+            } catch(err) {
+                errEl.textContent = err.message;
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+            }
+        }
+
+        async function logout() {
+            clearSession();
+            updateNavState();
+            loadApps();
+        }
+
+        // ── App grid ──────────────────────────────────────────────────────────
         async function loadApps() {
             try {
-                const response = await fetch('/getapps');
+                const token = getToken();
+                const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+                const response = await fetch('/getapps', { headers });
+                if (!response.ok) throw new Error('Failed to load apps');
                 const apps = await response.json();
-                
-                //const grid = document.querySelector('.grid');
+
                 const grid = document.getElementById('appgrid');
-                grid.innerHTML = ''; // Clear existing cards
-                
+                grid.innerHTML = '';
+
+                if (apps.length === 0) {
+                    grid.innerHTML = '<p class="text-white/60 col-span-full text-center py-8">No apps available. Sign in to see more.</p>';
+                    return;
+                }
+
                 apps.forEach((app, index) => {
                     const card = document.createElement('div');
                     card.className = 'app-card glass rounded-xl p-4 cursor-pointer group animate-fadeInUp';
                     card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
-                    
-                    //color should be tailwind color - blue, green, purple, orange, pink, yellow, red, indigo, etc.
+
+                    const roleBadges = (app.roles || []).map(r =>
+                        `<span class="badge">${r}</span>`
+                    ).join('');
+
                     card.innerHTML = `
                         <div class="bg-gradient-to-br from-${app.color}-400 to-${app.color}-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
                             <span class="text-2xl">${app.icon}</span>
                         </div>
                         <h3 class="text-white text-base font-bold mb-1">${app.name}</h3>
-                        <p class="text-white/70 text-xs">${app.description}</p>
+                        <p class="text-white/70 text-xs mb-1">${app.description}</p>
+                        ${roleBadges ? `<div class="mt-1">${roleBadges}</div>` : ''}
                     `;
-                    
+
                     card.addEventListener('click', function() {
-                        window.location.href = app.url;
+                        const t = getToken();
+                        window.location.href = t ? `${app.url}?token=${encodeURIComponent(t)}` : app.url;
                     });
-                    
+
                     grid.appendChild(card);
                 });
             } catch (error) {
                 console.error('Error loading apps:', error);
             }
         }
+
+        // ── Error banner from redirect ─────────────────────────────────────────
+        function checkErrorParam() {
+            const params = new URLSearchParams(window.location.search);
+            const err = params.get('error');
+            if (err === 'unauthorized') {
+                showErrorBanner('Please sign in to access that page.');
+                openLoginModal();
+            } else if (err === 'forbidden') {
+                showErrorBanner('You do not have permission to access that page.');
+            }
+            if (err) {
+                // Clean up URL
+                history.replaceState({}, '', window.location.pathname);
+            }
+        }
+
+        function showErrorBanner(msg) {
+            const el = document.getElementById('error-banner');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 6000);
+        }
+
+        // ── Init ──────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNavState();
+            checkErrorParam();
+            loadApps();
+        });
     </script>
 </body>
 </html>

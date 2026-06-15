@@ -2,20 +2,30 @@
 
 module.exports = function(app) {
 
-    app.get('/getapps', (req, res) => {
-        const apps = getPluginList();
-        _.each(apps, (app, key) => {
-            delete app.service;
-            delete app.www;
+    app.get('/getapps', authMiddleware.optional, (req, res) => {
+        const allApps = getPluginList();
+        const userRoles = req.user ? (req.user.roles || []) : [];
 
-            if(app.iplock && app.iplock.length>0) {
-                if(!req.remoteAddress || !app.iplock.includes(req.remoteAddress)) {
-                    delete apps[key];
-                }
+        const result = [];
+        _.each(allApps, (plugin) => {
+            const entry = { ...plugin };
+            delete entry.service;
+            delete entry.www;
+
+            // IP lock check
+            if(entry.iplock && entry.iplock.length > 0) {
+                if(!req.remoteAddress || !entry.iplock.includes(req.remoteAddress)) return;
             }
+
+            // Role check: no roles key = public; roles key = must have overlap
+            if(entry.roles && entry.roles.length > 0) {
+                if(!hasRoleOverlap(userRoles, entry.roles)) return;
+            }
+
+            result.push(entry);
         });
 
-        res.json(Object.values(apps));
+        res.json(result);
     });
 
     app.get('/download/:fileId', (req, res) => {
