@@ -1,0 +1,10 @@
+{
+    "name": "User Management",
+    "description": "Manage users, roles and access permissions",
+    "icon": "👥",
+    "color": "indigo",
+    "group": "Administration",
+    "author": "Bismay M.",
+    "roles": ["admin"],
+    "hidden": true
+}

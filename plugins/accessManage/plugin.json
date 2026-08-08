@@ -1,0 +1,10 @@
+{
+    "name": "Access Manager",
+    "description": "Control which roles can see and open each installed app",
+    "icon": "🔐",
+    "color": "slate",
+    "group": "Administration",
+    "author": "Bismay M.",
+    "roles": ["admin"],
+    "hidden": true
+}

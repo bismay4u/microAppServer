@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .topbar {
+            background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+            color: white;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(15,23,42,.3);
+        }
+        .topbar .brand { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .topbar .user-pill {
+            background: rgba(255,255,255,.2);
+            border-radius: 999px;
+            padding: 4px 14px;
+            font-size: .85rem;
+        }
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0,0,0,.06);
+            overflow: hidden;
+        }
+        .table thead th {
+            background: #f8fafc;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #6b7280;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        .table tbody tr { vertical-align: middle; }
+        .table tbody tr:hover { background: #f8fafc; }
+        .role-badge {
+            display: inline-block;
+            font-size: .7rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 600;
+            margin: 2px 2px 2px 0;
+        }
+        .role-badge.admin { background: #fee2e2; color: #991b1b; }
+        .overridden-badge, .hidden-badge {
+            display: inline-block;
+            font-size: .65rem;
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 700;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .hidden-badge {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .tag-input-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            border: 1.5px solid #dee2e6;
+            border-radius: 8px;
+            padding: 6px 10px;
+            min-height: 42px;
+            align-items: center;
+            cursor: text;
+        }
+        .tag-input-area:focus-within { border-color: #334155; box-shadow: 0 0 0 3px rgba(51,65,85,.15); }
+        .tag-chip {
+            background: #e2e8f0;
+            color: #334155;
+            border-radius: 999px;
+            padding: 2px 8px 2px 10px;
+            font-size: .8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tag-chip button {
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+            color: #475569;
+            cursor: pointer;
+            font-size: .9rem;
+        }
+        .tag-input-area input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 80px;
+            font-size: .9rem;
+        }
+        .suggested-roles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .suggested-roles button {
+            font-size: .75rem;
+            padding: 2px 10px;
+            border-radius: 999px;
+            border: 1.5px solid #cbd5e1;
+            background: white;
+            color: #334155;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .suggested-roles button:hover { background: #e2e8f0; }
+        .btn-action { padding: 4px 10px; font-size: .8rem; }
+        .icon-avatar {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #334155, #0f172a);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+    <div class="brand">
+        <span>🔐</span> Access Manager
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <span class="user-pill" id="current-user-pill"></span>
+        <a href="/" id="home-link" class="btn btn-sm btn-light">← Home</a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container-fluid py-4 px-4">
+
+    <div id="auth-error" class="alert alert-danger d-none">
+        <i class="bi bi-shield-exclamation me-2"></i>
+        <span id="auth-error-msg"></span>
+    </div>
+
+    <div id="app-content" class="d-none">
+        <div class="mb-3">
+            <h5 class="mb-0 fw-bold">Installed Apps</h5>
+            <small class="text-muted">Set which roles can see and open each app. Overrides apply instantly, no restart needed.</small>
+        </div>
+
+        <div class="main-card">
+            <div id="table-loading" class="text-center py-5 text-muted">
+                <div class="spinner-border spinner-border-sm me-2"></div> Loading apps…
+            </div>
+            <div id="table-wrap" class="d-none">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:44px"></th>
+                            <th>App</th>
+                            <th>Group</th>
+                            <th>Visible to</th>
+                            <th style="width:170px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="plugins-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Access Modal -->
+<div class="modal fade" id="accessModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modal-title">Edit Access</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-error" class="alert alert-danger d-none py-2 small"></div>
+                <input type="hidden" id="form-folder">
+
+                <div class="mb-1">
+                    <label class="form-label fw-semibold">Roles allowed to see &amp; open this app</label>
+                    <div class="tag-input-area" id="tag-input-area" onclick="document.getElementById('role-text-input').focus()">
+                        <input type="text" id="role-text-input" placeholder="Type role and press Enter, leave empty for everyone"
+                            onkeydown="handleRoleInput(event)">
+                    </div>
+                    <div class="suggested-roles mt-2" id="suggested-roles"></div>
+                    <small class="text-muted">No roles = visible to everyone (including signed-out visitors).</small>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-dark" onclick="submitAccessForm(event)" id="save-btn">
+                    <span id="save-label">Save</span>
+                    <span id="save-spinner" class="spinner-border spinner-border-sm ms-1 d-none"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Auth ─────────────────────────────────────────────────────────────────────
+const TOKEN = new URLSearchParams(window.location.search).get('token')
+           || localStorage.getItem('auth_token');
+
+function authHeaders() {
+    return { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' };
+}
+
+async function apiFetch(method, path, body) {
+    const opts = { method, headers: authHeaders() };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+}
+
+// ── Roles tag input ───────────────────────────────────────────────────────────
+let currentRoles = [];
+const KNOWN_ROLES = ['admin', 'admin_products'];
+
+function renderRoleTags() {
+    const area = document.getElementById('tag-input-area');
+    const input = document.getElementById('role-text-input');
+    area.querySelectorAll('.tag-chip').forEach(el => el.remove());
+    currentRoles.forEach(role => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        chip.innerHTML = `${role}<button type="button" onclick="removeRole('${role}')">&times;</button>`;
+        area.insertBefore(chip, input);
+    });
+    renderSuggestedRoles();
+}
+
+function addRole(role) {
+    role = role.trim().toLowerCase().replace(/\s+/g, '_');
+    if (!role || currentRoles.includes(role)) return;
+    currentRoles.push(role);
+    renderRoleTags();
+}
+
+function removeRole(role) {
+    currentRoles = currentRoles.filter(r => r !== role);
+    renderRoleTags();
+}
+
+function handleRoleInput(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addRole(e.target.value);
+        e.target.value = '';
+    } else if (e.key === 'Backspace' && e.target.value === '' && currentRoles.length) {
+        removeRole(currentRoles[currentRoles.length - 1]);
+    }
+}
+
+function renderSuggestedRoles() {
+    const container = document.getElementById('suggested-roles');
+    const remaining = KNOWN_ROLES.filter(r => !currentRoles.includes(r));
+    container.innerHTML = remaining.map(r =>
+        `<button type="button" onclick="addRole('${r}')">${r}</button>`
+    ).join('');
+}
+
+// ── Plugin table ──────────────────────────────────────────────────────────────
+let allPlugins = [];
+
+async function loadPlugins() {
+    document.getElementById('table-loading').classList.remove('d-none');
+    document.getElementById('table-wrap').classList.add('d-none');
+    try {
+        allPlugins = await apiFetch('GET', '/plugin-access');
+        allPlugins.sort((a, b) => a.name.localeCompare(b.name));
+        renderTable();
+    } catch(e) {
+        showAuthError(e.message);
+    } finally {
+        document.getElementById('table-loading').classList.add('d-none');
+        document.getElementById('table-wrap').classList.remove('d-none');
+    }
+}
+
+function renderTable() {
+    const tbody = document.getElementById('plugins-tbody');
+    tbody.innerHTML = allPlugins.map(p => `
+        <tr>
+            <td><div class="icon-avatar">${escHtml(p.icon || '📦')}</div></td>
+            <td class="fw-semibold">
+                ${escHtml(p.name)}
+                ${p.overridden ? '<span class="overridden-badge">CUSTOM</span>' : ''}
+                ${p.hidden ? '<span class="hidden-badge">HIDDEN · via Setup</span>' : ''}
+            </td>
+            <td class="text-muted small">${escHtml(p.group || 'General')}</td>
+            <td>${roleBadges(p.roles)}</td>
+            <td class="text-end">
+                <button class="btn btn-outline-dark btn-action me-1" onclick="openEditModal('${p.folder}')">
+                    <i class="bi bi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-outline-secondary btn-action" onclick="resetAccess('${p.folder}')"
+                    ${p.overridden ? '' : 'disabled title="Already matches the default"'}>
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function roleBadges(roles) {
+    if (!roles || !roles.length) return '<span class="text-muted small">everyone</span>';
+    return roles.map(r => `<span class="role-badge ${r === 'admin' ? 'admin' : ''}">${escHtml(r)}</span>`).join('');
+}
+
+// ── Edit modal ────────────────────────────────────────────────────────────────
+function openEditModal(folder) {
+    const plugin = allPlugins.find(p => p.folder === folder);
+    if (!plugin) return;
+    document.getElementById('modal-title').textContent = `Edit Access — ${plugin.name}`;
+    document.getElementById('form-folder').value = folder;
+    document.getElementById('modal-error').classList.add('d-none');
+    currentRoles = [...(plugin.roles || [])];
+    renderRoleTags();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('accessModal')).show();
+}
+
+async function submitAccessForm(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('modal-error');
+    const saveBtn = document.getElementById('save-btn');
+    const spinner = document.getElementById('save-spinner');
+    errEl.classList.add('d-none');
+    saveBtn.disabled = true;
+    spinner.classList.remove('d-none');
+
+    const folder = document.getElementById('form-folder').value;
+    const roles = [...currentRoles];
+
+    try {
+        await apiFetch('PUT', `/plugin-access/${folder}`, { roles });
+        bootstrap.Modal.getInstance(document.getElementById('accessModal')).hide();
+        await loadPlugins();
+    } catch(err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('d-none');
+    } finally {
+        saveBtn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+}
+
+async function resetAccess(folder) {
+    try {
+        await apiFetch('DELETE', `/plugin-access/${folder}`);
+        await loadPlugins();
+    } catch(e) {
+        alert(e.message);
+    }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showAuthError(msg) {
+    document.getElementById('auth-error-msg').textContent = msg;
+    document.getElementById('auth-error').classList.remove('d-none');
+    document.getElementById('app-content').classList.add('d-none');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+if (window.self !== window.top) document.getElementById('home-link')?.remove();
+
+(async function init() {
+    if (!TOKEN) {
+        window.location.href = '/?error=unauthorized';
+        return;
+    }
+    try {
+        const me = await apiFetch('GET', '/auth/me');
+        if (!me.roles.includes('admin')) throw new Error('Admin access required');
+        document.getElementById('current-user-pill').textContent = me.username;
+        document.getElementById('app-content').classList.remove('d-none');
+
+        // Gather known roles from all users for suggestions
+        const users = await apiFetch('GET', '/users');
+        users.forEach(u => (u.roles || []).forEach(r => { if (!KNOWN_ROLES.includes(r)) KNOWN_ROLES.push(r); }));
+
+        await loadPlugins();
+    } catch(e) {
+        showAuthError(e.message);
+    }
+})();
+</script>
+</body>
+</html>

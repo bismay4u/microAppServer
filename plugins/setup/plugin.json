@@ -1,0 +1,10 @@
+{
+    "name": "Setup",
+    "description": "Administration hub — users, addons and access, all in one place",
+    "icon": "⚙️",
+    "color": "slate",
+    "group": "Administration",
+    "author": "Bismay M.",
+    "roles": ["admin"],
+    "hidden": true
+}
