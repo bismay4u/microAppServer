@@ -3,6 +3,7 @@
     "description": "Demo Module",
     "icon": "📊",
     "color": "green",
+    "group": "Developer Tools",
     "author": "Bismay M.",
     "aiagent": "LogiksAI"
 }

@@ -7,20 +7,23 @@ module.exports = function(app) {
         const userRoles = req.user ? (req.user.roles || []) : [];
 
         const result = [];
-        _.each(allApps, (plugin) => {
+        _.each(allApps, (plugin, folder) => {
             const entry = { ...plugin };
             delete entry.service;
             delete entry.www;
+            entry.folder = folder;
 
             // IP lock check
             if(entry.iplock && entry.iplock.length > 0) {
                 if(!req.remoteAddress || !entry.iplock.includes(req.remoteAddress)) return;
             }
 
-            // Role check: no roles key = public; roles key = must have overlap
-            if(entry.roles && entry.roles.length > 0) {
-                if(!hasRoleOverlap(userRoles, entry.roles)) return;
+            // Role check via dynamic access overrides (falls back to plugin.json roles)
+            const effectiveRoles = getEffectiveRoles(folder, entry.roles);
+            if(effectiveRoles && effectiveRoles.length > 0) {
+                if(!hasRoleOverlap(userRoles, effectiveRoles)) return;
             }
+            entry.roles = effectiveRoles;
 
             result.push(entry);
         });

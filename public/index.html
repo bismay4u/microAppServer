@@ -58,6 +58,13 @@
             margin-right: 3px;
             margin-top: 2px;
         }
+        .addon-link-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -83,6 +90,10 @@
 
                     <!-- Logged-in state -->
                     <div id="nav-loggedin" class="hidden flex items-center space-x-3">
+                        <a id="nav-setup-link" href="#" title="Setup"
+                            class="hidden bg-white/20 border border-white/40 text-white w-9 h-9 rounded-lg hover:bg-white/30 transition items-center justify-center">
+                            <span class="text-lg">⚙️</span>
+                        </a>
                         <span id="nav-username" class="text-white font-semibold"></span>
                         <button onclick="logout()" class="bg-white/20 border border-white/40 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition text-sm">
                             Sign Out
@@ -102,8 +113,8 @@
                     <p id="error-banner" class="hidden mt-4 text-red-200 text-sm bg-red-500/30 rounded-lg px-4 py-2 max-w-sm mx-auto"></p>
                 </div>
 
-                <!-- Apps Grid -->
-                <div id="appgrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-fadeInUp" style="animation-delay: 0.3s;"></div>
+                <!-- Grouped Apps + Addon Links -->
+                <div id="grid-container" class="animate-fadeInUp" style="animation-delay: 0.3s;"></div>
 
                 <!-- Floating Elements -->
                 <div class="absolute top-20 right-20 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
@@ -163,13 +174,25 @@
 
         function updateNavState() {
             const user = getUser();
+            const setupLink = document.getElementById('nav-setup-link');
             if (user) {
                 document.getElementById('nav-loggedout').classList.add('hidden');
                 document.getElementById('nav-loggedin').classList.remove('hidden');
                 document.getElementById('nav-username').textContent = user.username;
+
+                if (user.roles && user.roles.includes('admin')) {
+                    setupLink.href = `/setup/?token=${encodeURIComponent(getToken())}`;
+                    setupLink.classList.remove('hidden');
+                    setupLink.classList.add('inline-flex');
+                } else {
+                    setupLink.classList.add('hidden');
+                    setupLink.classList.remove('inline-flex');
+                }
             } else {
                 document.getElementById('nav-loggedout').classList.remove('hidden');
                 document.getElementById('nav-loggedin').classList.add('hidden');
+                setupLink.classList.add('hidden');
+                setupLink.classList.remove('inline-flex');
             }
         }
 
@@ -213,7 +236,7 @@
                 setSession(data.token, data.user);
                 closeLoginModal();
                 updateNavState();
-                loadApps();
+                loadGrid();
             } catch(err) {
                 errEl.textContent = err.message;
                 errEl.classList.remove('hidden');
@@ -226,54 +249,132 @@
         async function logout() {
             clearSession();
             updateNavState();
-            loadApps();
+            loadGrid();
         }
 
-        // ── App grid ──────────────────────────────────────────────────────────
-        async function loadApps() {
+        // ── Grouped apps + addon links grid ──────────────────────────────────────
+        async function loadGrid() {
             try {
                 const token = getToken();
                 const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-                const response = await fetch('/getapps', { headers });
-                if (!response.ok) throw new Error('Failed to load apps');
-                const apps = await response.json();
+                const [appsRes, addonsRes] = await Promise.all([
+                    fetch('/getapps', { headers }),
+                    fetch('/addons', { headers })
+                ]);
+                if (!appsRes.ok || !addonsRes.ok) throw new Error('Failed to load apps');
 
-                const grid = document.getElementById('appgrid');
-                grid.innerHTML = '';
+                const apps = (await appsRes.json()).map(a => ({ ...a, _type: 'app' })).filter(a => !a.hidden);
+                const addons = (await addonsRes.json()).map(a => ({ ...a, _type: 'addon' }));
+                const items = [...apps, ...addons];
 
-                if (apps.length === 0) {
-                    grid.innerHTML = '<p class="text-white/60 col-span-full text-center py-8">No apps available. Sign in to see more.</p>';
+                const container = document.getElementById('grid-container');
+                container.innerHTML = '';
+
+                if (items.length === 0) {
+                    container.innerHTML = '<p class="text-white/60 text-center py-8">No apps available. Sign in to see more.</p>';
                     return;
                 }
 
-                apps.forEach((app, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'app-card glass rounded-xl p-4 cursor-pointer group animate-fadeInUp';
-                    card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
+                let sectionCount = 0;
 
-                    const roleBadges = (app.roles || []).map(r =>
-                        `<span class="badge">${r}</span>`
-                    ).join('');
+                const recentItems = getRecentItems(items);
+                if (recentItems.length) {
+                    container.appendChild(buildSection('⏱ Recently Used', recentItems, sectionCount++ > 0));
+                }
 
-                    card.innerHTML = `
-                        <div class="bg-gradient-to-br from-${app.color}-400 to-${app.color}-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                            <span class="text-2xl">${app.icon}</span>
-                        </div>
-                        <h3 class="text-white text-base font-bold mb-1">${app.name}</h3>
-                        <p class="text-white/70 text-xs mb-1">${app.description}</p>
-                        ${roleBadges ? `<div class="mt-1">${roleBadges}</div>` : ''}
-                    `;
+                const groups = {};
+                items.forEach(item => {
+                    const groupName = (item.group && item.group.trim()) || 'General';
+                    (groups[groupName] = groups[groupName] || []).push(item);
+                });
 
-                    card.addEventListener('click', function() {
-                        const t = getToken();
-                        window.location.href = t ? `${app.url}?token=${encodeURIComponent(t)}` : app.url;
-                    });
+                const groupNames = Object.keys(groups).sort((a, b) => {
+                    if (a === 'General') return 1;
+                    if (b === 'General') return -1;
+                    return a.localeCompare(b);
+                });
 
-                    grid.appendChild(card);
+                groupNames.forEach(groupName => {
+                    container.appendChild(buildSection(groupName, groups[groupName], sectionCount++ > 0));
                 });
             } catch (error) {
                 console.error('Error loading apps:', error);
             }
+        }
+
+        function buildSection(title, items, spaced) {
+            const section = document.createElement('div');
+            section.className = spaced ? 'mt-12' : '';
+
+            const heading = document.createElement('h2');
+            heading.className = 'text-white text-xl font-bold mb-4 opacity-90';
+            heading.textContent = title;
+            section.appendChild(heading);
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4';
+            items.forEach((item, index) => grid.appendChild(buildCard(item, index)));
+            section.appendChild(grid);
+
+            return section;
+        }
+
+        // ── Recently used shortcuts ──────────────────────────────────────────────
+        const RECENT_KEY = 'apphub_recent_items';
+        const RECENT_MAX = 6;
+
+        function itemKey(item) {
+            return item._type + ':' + (item._type === 'addon' ? item.id : item.url);
+        }
+
+        function recordRecentUse(item) {
+            let recent;
+            try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) { recent = []; }
+            const key = itemKey(item);
+            recent = recent.filter(k => k !== key);
+            recent.unshift(key);
+            localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, RECENT_MAX)));
+        }
+
+        function getRecentItems(items) {
+            let recent;
+            try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) { recent = []; }
+            const byKey = {};
+            items.forEach(item => { byKey[itemKey(item)] = item; });
+            return recent.map(key => byKey[key]).filter(Boolean);
+        }
+
+        function buildCard(item, index) {
+            const card = document.createElement('div');
+            card.className = 'app-card glass rounded-xl p-4 cursor-pointer group animate-fadeInUp relative';
+            card.style.animationDelay = `${0.1 + (index * 0.05)}s`;
+
+            const roleBadges = (item.roles || []).map(r =>
+                `<span class="badge">${r}</span>`
+            ).join('');
+            const linkIcon = item._type === 'addon' ? '<span class="addon-link-icon">↗</span>' : '';
+
+            card.innerHTML = `
+                ${linkIcon}
+                <div class="bg-gradient-to-br from-${item.color}-400 to-${item.color}-600 w-12 h-12 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                    <span class="text-2xl">${item.icon}</span>
+                </div>
+                <h3 class="text-white text-base font-bold mb-1">${item.name}</h3>
+                <p class="text-white/70 text-xs mb-1">${item.description || ''}</p>
+                ${roleBadges ? `<div class="mt-1">${roleBadges}</div>` : ''}
+            `;
+
+            card.addEventListener('click', function() {
+                recordRecentUse(item);
+                if (item._type === 'addon') {
+                    window.open(item.url, '_blank', 'noopener,noreferrer');
+                } else {
+                    const t = getToken();
+                    window.location.href = t ? `${item.url}?token=${encodeURIComponent(t)}` : item.url;
+                }
+            });
+
+            return card;
         }
 
         // ── Error banner from redirect ─────────────────────────────────────────
@@ -303,7 +404,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateNavState();
             checkErrorParam();
-            loadApps();
+            loadGrid();
         });
     </script>
 </body>

@@ -24,31 +24,34 @@ module.exports = function(app) {
                     require(servicePath)('/api/'+folder, app);
                 }
                 if(fs.existsSync(wwwPath)) {
-                    if(config.roles && config.roles.length > 0) {
-                        // Protect HTML entry points for role-restricted plugins
-                        app.use('/'+folder, (req, res, next) => {
-                            const isHtmlRequest = req.path === '/' || req.path === '' || req.path.endsWith('.html');
-                            if(!isHtmlRequest) return next();
+                    // Protect HTML entry points — access is resolved at request time via
+                    // getEffectiveRoles() so admin overrides apply without a restart, even
+                    // for plugins that ship with no "roles" in plugin.json.
+                    app.use('/'+folder, (req, res, next) => {
+                        const isHtmlRequest = req.path === '/' || req.path === '' || req.path.endsWith('.html');
+                        if(!isHtmlRequest) return next();
 
-                            const authHeader = req.headers.authorization;
-                            const token = (authHeader && authHeader.startsWith('Bearer '))
-                                ? authHeader.slice(7)
-                                : req.query.token;
+                        const effectiveRoles = getEffectiveRoles(folder, config.roles);
+                        if(!effectiveRoles || effectiveRoles.length === 0) return next();
 
-                            if(!token) return res.redirect('/?error=unauthorized');
+                        const authHeader = req.headers.authorization;
+                        const token = (authHeader && authHeader.startsWith('Bearer '))
+                            ? authHeader.slice(7)
+                            : req.query.token;
 
-                            try {
-                                const jwt = require('jsonwebtoken');
-                                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hyperapps-jwt-secret-change-in-production');
-                                if(!hasRoleOverlap(decoded.roles, config.roles)) {
-                                    return res.redirect('/?error=forbidden');
-                                }
-                                next();
-                            } catch(e) {
-                                return res.redirect('/?error=unauthorized');
+                        if(!token) return res.redirect('/?error=unauthorized');
+
+                        try {
+                            const jwt = require('jsonwebtoken');
+                            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hyperapps-jwt-secret-change-in-production');
+                            if(!hasRoleOverlap(decoded.roles, effectiveRoles)) {
+                                return res.redirect('/?error=forbidden');
                             }
-                        });
-                    }
+                            next();
+                        } catch(e) {
+                            return res.redirect('/?error=unauthorized');
+                        }
+                    });
                     app.use('/'+folder, express.static(wwwPath));
                 }
 

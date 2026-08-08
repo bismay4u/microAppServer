@@ -30,7 +30,7 @@ const appServer = express();
 const upload = multer({ dest: "temp/uploads/" });
 global.uploader = upload;
 
-console.log("\x1b[33m%s\x1b[0m","\nMicroAppServer Initialization Started\n");
+console.log("\x1b[33m%s\x1b[0m","\nHyperApps Initialization Started\n");
 
 require("./api/commons.js")(appServer);
 
@@ -38,6 +38,9 @@ const SERVER = require("./api/server.js")(appServer);
 
 // Auth/users must be loaded before baseapp and routes so middleware is globally available
 require("./api/users.js")(appServer);
+
+require("./api/addons.js")(appServer);
+require("./api/pluginAccess.js")(appServer);
 
 const BASEAPP = require("./api/baseapp.js")(appServer);
 
@@ -64,5 +67,5 @@ appServer.listen(process.env.PORT, () => {
         // next();
     });
 
-    console.log("\x1b[33m%s\x1b[0m",`\nMicroAppServer Server Started @ `+moment().format()+` and can be accessed on ${process.env.PORT}/`);
+    console.log("\x1b[33m%s\x1b[0m",`\nHperApps Server Started @ `+moment().format()+` and can be accessed on ${process.env.PORT}/`);
 });
